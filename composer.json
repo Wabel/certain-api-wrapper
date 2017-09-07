@@ -1,0 +1,43 @@
+{
+    "name": "wabel/certain-api-wrapper",
+    "description": "PHP Wrapper to use certain API v2.0 and integrate Events with Your Other Business Applications",
+    "authors": [
+        {
+            "name": "Raphaël BERGINA",
+            "email": "raphael.bergina@wabel.com"
+        }
+    ],
+    "type": "library",
+    "homepage": "http://wwww.wabel.com",
+    "keywords": [
+        "certain",
+        "certain API",
+        "Wrapper",
+        "PHP"
+    ],
+    "require": {
+        "php": ">=5.4",
+        "guzzlehttp/guzzle": "~6.0",
+        "psr/log": "~1.0",
+        "symfony/console": "~3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0",
+	  "satooshi/php-coveralls": "~1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wabel\\CertainAPI\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Wabel\\CertainAPI\\": "test"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
