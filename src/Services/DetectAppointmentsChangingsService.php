@@ -141,9 +141,9 @@ class DetectAppointmentsChangingsService
      * @param $timestamp
      * @return array
      */
-    private function insertDateTimeChanges(array $appointments,$timestamp){
+    public static function insertDateTimeChanges(array $appointments,$timestamp){
         foreach ($appointments as $key => $appointment){
-            $appointment[$key]['dateDetectChanges'] = $timestamp;
+            $appointments[$key]['dateDetectChanges'] = $timestamp;
         }
         return $appointments;
     }
@@ -157,8 +157,8 @@ class DetectAppointmentsChangingsService
     public function detectAppointmentsChangings(array $appointmentsOld,array $appointmentsNew,$timestamp){
         $changings = $this->getListChangings($appointmentsOld,$appointmentsNew);
         $changesList = $this->detectDeleteOrUpdated($appointmentsNew,$changings);
-        $changesList['updated'] = $this->insertDateTimeChanges($changesList['updated'],$timestamp);
-        $changesList['deleted'] = $this->insertDateTimeChanges($changesList['deleted'],$timestamp);
+        $changesList['updated'] = self::insertDateTimeChanges($changesList['updated'],$timestamp);
+        $changesList['deleted'] = self::insertDateTimeChanges($changesList['deleted'],$timestamp);
         return $changesList;
     }
 

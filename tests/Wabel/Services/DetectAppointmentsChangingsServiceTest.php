@@ -130,14 +130,17 @@ class DetectAppointmentsChangingsServiceTest extends TestCase
         $oldAppointments = $this->certainAppointmentsList;
         $oldAppointments[10] = $this->personalAppointment();
         $currentAppoiments = $oldAppointments;
+        $time = time();
         $delete1 = DetectAppointmentsChangingsService::recursiveArrayObjectToFullArray($currentAppoiments[1]);
+        $delete1['dateDetectChanges'] = $time;
         $delete2 = DetectAppointmentsChangingsService::recursiveArrayObjectToFullArray($currentAppoiments[4]);
+        $delete2['dateDetectChanges'] = $time;
         unset($currentAppoiments[1]);
         unset($currentAppoiments[4]);
         $update1 = $currentAppoiments[10];
+        $update1['dateDetectChanges'] = $time;
         $currentAppoiments[10]["startDate"] = "2015-17-07 12:00:00";
         $currentAppoiments[10]["endDate"] = "2015-17-07 12:30:00";
-        $time = time();
         $listDetected = $detectService->detectAppointmentsChangings($oldAppointments,$currentAppoiments,$time);
         $this->assertContains($delete1,$listDetected['deleted']);
         $this->assertContains($delete2,$listDetected['deleted']);
