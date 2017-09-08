@@ -71,9 +71,13 @@ EOT
     public function run(InputInterface $input, OutputInterface $output)
     {
         $eventCode = null;
+
         //Get the EventCode we need to check.
         if($this->filePathEventToCheck && file_exists($this->filePathEventToCheck)){
-            $eventCode = FileChangesHelper::getContentFile($this->filePathEventToCheck);
+            $configurationEventFile = parse_ini_file($this->filePathEventToCheck);
+            if(isset($configurationEventFile['eventCode'])){
+                $eventCode = $configurationEventFile['eventCode'];
+            }
         }
         //That permits to stop the followings instructions when we are makings changes on Certain.
         if(!file_exists($this->fileLockAuthorizeRun.'/detect_appointments_changes.lock') && $eventCode){
