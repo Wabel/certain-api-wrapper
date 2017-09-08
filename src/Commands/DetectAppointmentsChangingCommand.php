@@ -92,7 +92,8 @@ EOT
                 $appointmentsOld = DetectAppointmentsChangingsService::recursiveArrayObjectToFullArray($appointmentsOldHistory);
             }
             //Check if they are changes.
-            $listChangings = $this->detectAppointmentsChangingsService->detectAppointmentsChangings($appointmentsOld,$appointmentsNew);
+            $timestamp = time();
+            $listChangings = $this->detectAppointmentsChangingsService->detectAppointmentsChangings($appointmentsOld,$appointmentsNew,$timestamp);
             if(!$appointmentsOld || ((isset($listChangings['updated']) && !empty($listChangings['updated']))
                 || (isset($listChangings['deleted']) && !empty($listChangings['deleted'])))){
                 //Changes? So we save the new online appointments

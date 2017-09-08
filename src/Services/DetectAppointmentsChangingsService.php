@@ -157,12 +157,6 @@ class DetectAppointmentsChangingsService
     public function detectAppointmentsChangings(array $appointmentsOld,array $appointmentsNew,$timestamp){
         $changings = $this->getListChangings($appointmentsOld,$appointmentsNew);
         $changesList = $this->detectDeleteOrUpdated($appointmentsNew,$changings);
-        $insertDateTimeChanges = function ($appointment)use($timestamp){
-            if($appointment){
-                $appointment['dateDetectChanges'] = $timestamp;
-            }
-            return $appointment;
-        };
         $changesList['updated'] = $this->insertDateTimeChanges($changesList['updated'],$timestamp);
         $changesList['deleted'] = $this->insertDateTimeChanges($changesList['deleted'],$timestamp);
         return $changesList;
