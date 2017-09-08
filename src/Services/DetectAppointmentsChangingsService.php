@@ -28,7 +28,7 @@ class DetectAppointmentsChangingsService
             $start = 0;
         }
         if(!$maxResult){
-            $maxResult = $this->appointmentsCertain->get($eventCode,['start_index'=>0,'max_results'=>1])->getMaxResults();
+            $maxResult = $this->appointmentsCertain->get($eventCode,['start_index'=>0,'max_results'=>99999])->getMaxResults();
         }
         return $this->certainAppointmentsList = $this->appointmentsCertain->get($eventCode,['start_index'=>$start,'max_results'=>$maxResult])->getResults()->appointments;
     }
