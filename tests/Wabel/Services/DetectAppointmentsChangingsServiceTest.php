@@ -137,7 +137,8 @@ class DetectAppointmentsChangingsServiceTest extends TestCase
         $update1 = $currentAppoiments[10];
         $currentAppoiments[10]["startDate"] = "2015-17-07 12:00:00";
         $currentAppoiments[10]["endDate"] = "2015-17-07 12:30:00";
-        $listDetected = $detectService->detectAppointmentsChangings($oldAppointments,$currentAppoiments);
+        $time = time();
+        $listDetected = $detectService->detectAppointmentsChangings($oldAppointments,$currentAppoiments,$time);
         $this->assertContains($delete1,$listDetected['deleted']);
         $this->assertContains($delete2,$listDetected['deleted']);
         $this->assertContains($update1,$listDetected['updated']);

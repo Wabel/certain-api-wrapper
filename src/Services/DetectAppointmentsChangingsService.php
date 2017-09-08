@@ -137,25 +137,35 @@ class DetectAppointmentsChangingsService
     }
 
     /**
-     * @param array $appointment
+     * @param array $appointments
+     * @param $timestamp
      * @return array
      */
-    private function insertDateTimeChanges(array $appointment){
-        if($appointment){
-            $appointment['dateDetectChanges'] = time();
+    private function insertDateTimeChanges(array $appointments,$timestamp){
+        foreach ($appointments as $key => $appointment){
+            $appointment[$key]['dateDetectChanges'] = $timestamp;
         }
-        return $appointment;
+        return $appointments;
     }
 
     /**
      * @param array $appointmentsOld
      * @param array $appointmentsNew
+     * @param string $timestamp
      * @return array ['deleted'=>[],'updated'=>[]]
      */
-    public function detectAppointmentsChangings(array $appointmentsOld,array $appointmentsNew){
+    public function detectAppointmentsChangings(array $appointmentsOld,array $appointmentsNew,$timestamp){
         $changings = $this->getListChangings($appointmentsOld,$appointmentsNew);
         $changesList = $this->detectDeleteOrUpdated($appointmentsNew,$changings);
-        return array_map([$this,'insertDateTimeChanges'],$changesList);
+        $insertDateTimeChanges = function ($appointment)use($timestamp){
+            if($appointment){
+                $appointment['dateDetectChanges'] = $timestamp;
+            }
+            return $appointment;
+        };
+        $changesList['updated'] = $this->insertDateTimeChanges($changesList['updated'],$timestamp);
+        $changesList['deleted'] = $this->insertDateTimeChanges($changesList['deleted'],$timestamp);
+        return $changesList;
     }
 
 }
