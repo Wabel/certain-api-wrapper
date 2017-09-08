@@ -137,6 +137,17 @@ class DetectAppointmentsChangingsService
     }
 
     /**
+     * @param array $appointment
+     * @return array
+     */
+    private function insertDateTimeChanges(array $appointment){
+        if($appointment){
+            $appointment['dateDetectChanges'] = time();
+        }
+        return $appointment;
+    }
+
+    /**
      * @param array $appointmentsOld
      * @param array $appointmentsNew
      * @return array ['deleted'=>[],'updated'=>[]]
@@ -144,7 +155,7 @@ class DetectAppointmentsChangingsService
     public function detectAppointmentsChangings(array $appointmentsOld,array $appointmentsNew){
         $changings = $this->getListChangings($appointmentsOld,$appointmentsNew);
         $changesList = $this->detectDeleteOrUpdated($appointmentsNew,$changings);
-        return $changesList;
+        return array_map([$this,'insertDateTimeChanges'],$changesList);
     }
 
 }
