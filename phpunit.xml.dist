@@ -15,11 +15,10 @@
     </testsuites>
 
     <php>
-        <!-- DEFINE THESE VALUES -->
-        <!--<var name="username" value=""/>-->
-        <!--<var name="password" value=""/>-->
-        <!--<var name="accountCode" value=""/>-->
-        <!--<var name="eventCode" value=""/>-->
+        <var name="username" value=""/>
+        <var name="password" value=""/>
+        <var name="accountCode" value=""/>
+        <var name="eventCode" value=""/>
     </php>
 
 </phpunit>
