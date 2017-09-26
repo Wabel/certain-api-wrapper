@@ -15,10 +15,10 @@
     </testsuites>
 
     <php>
-        <env name="username" value=""/>
-        <env name="password" value=""/>
-        <env name="accountCode" value=""/>
-        <env name="eventCode" value=""/>
+        <!--<env name="username" value=""/>-->
+        <!--<env name="password" value=""/>-->
+        <!--<env name="accountCode" value=""/>-->
+        <!--<env name="eventCode" value=""/>-->
     </php>
 
 </phpunit>
