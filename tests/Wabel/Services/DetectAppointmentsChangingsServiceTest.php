@@ -68,10 +68,10 @@ class DetectAppointmentsChangingsServiceTest extends TestCase
 
     protected function setUp()
     {
-        $certainApiClient =  new CertainApiClient(null,$GLOBALS['username'],$GLOBALS['password'],$GLOBALS['accountCode']);
+        $certainApiClient =  new CertainApiClient(null,$_ENV['username'],$_ENV['password'],$_ENV['accountCode']);
         $this->certainApiService  = new CertainApiService($certainApiClient);
         $this->appointmentsCertain = new AppointmentsCertain($this->certainApiService);
-        $this->certainAppointmentsList = $this->appointmentsCertain->get($GLOBALS['eventCode'],['start_index'=>0,'max_results'=>10])->getResults()->appointments;
+        $this->certainAppointmentsList = $this->appointmentsCertain->get($_ENV['eventCode'],['start_index'=>0,'max_results'=>10])->getResults()->appointments;
     }
 
     public function testDetectChangings(){
