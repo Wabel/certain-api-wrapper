@@ -42,10 +42,20 @@ class DetectAppointmentsChangingsService
         $hasChanged = false;
         $appointmentsOld = self::recursiveArrayObjectToFullArray($appointmentsOld);
         $appointmentsNew = self::recursiveArrayObjectToFullArray($appointmentsNew);
+        //Has change by update or delete
         foreach ($appointmentsOld as $appointmentOld){
             if(!in_array($appointmentOld,$appointmentsNew)){
                 $hasChanged = true;
                 break;
+            }
+        }
+        //Has changes by insertion or update
+        if(!$hasChanged){
+            foreach ($appointmentsNew as $appointmentNew){
+                if(!in_array($appointmentNew,$appointmentsOld)){
+                    $hasChanged = true;
+                    break;
+                }
             }
         }
         return $hasChanged;
@@ -87,6 +97,23 @@ class DetectAppointmentsChangingsService
     }
 
     /**
+     * @param array $arrayOlds
+     * @param array $arrayNews
+     * @param array $existedUpdateOrDelete
+     * @return array
+     */
+    private function arrayRecursiveDiffNew(array $arrayOlds, array $arrayNews, array $existedUpdateOrDelete) {
+        $difference = [];
+        foreach($arrayNews as $key => $arrayNew){
+            if(!in_array($arrayNew,$arrayOlds)
+                && !in_array(self::recursiveArrayObjectToFullArray($arrayNew), $existedUpdateOrDelete)){
+                $difference[$key] = $arrayNew;
+            }
+        }
+        return $difference;
+    }
+
+    /**
      * @param array $appointmentsOld
      * @param array $appointmentsNew
      * @return array
@@ -94,10 +121,13 @@ class DetectAppointmentsChangingsService
     public function getListChangings(array $appointmentsOld,array $appointmentsNew){
         $appointmentsOld = self::recursiveArrayObjectToFullArray($appointmentsOld);
         $appointmentsNew = self::recursiveArrayObjectToFullArray($appointmentsNew);
-        $changesList = [];
+        $changesListUpdateOrDelete = [];
+        $changesListInsert = [];
         if($this->hasChanged($appointmentsOld,$appointmentsNew)){
-            $changesList = self::recursiveArrayObjectToFullArray($this->arrayRecursiveDiff($appointmentsOld,$appointmentsNew));
+            $changesListUpdateOrDelete = self::recursiveArrayObjectToFullArray($this->arrayRecursiveDiff($appointmentsOld,$appointmentsNew));
+            $changesListInsert = self::recursiveArrayObjectToFullArray($this->arrayRecursiveDiffNew($appointmentsOld, $appointmentsNew, $changesListUpdateOrDelete));
         }
+        $changesList = array_merge($changesListUpdateOrDelete, $changesListInsert);
         return $changesList;
     }
 
@@ -107,9 +137,10 @@ class DetectAppointmentsChangingsService
      * @param array $changingsDetected
      * @return array ['deleted'=>[],'updated'=>[]]
      */
-    public function detectDeleteOrUpdated(array $currentAppointments,array $changingsDetected){
+    public function detectDeleteOrUpdatedOrInserted(array $currentAppointments, array $changingsDetected){
         $delete = [];
         $update = [];
+        $insert = [];
         //@Todo: Detect Fields has changed
         $appointmentsNew = self::recursiveArrayObjectToFullArray($currentAppointments);
         $changings = self::recursiveArrayObjectToFullArray($changingsDetected);
@@ -129,10 +160,13 @@ class DetectAppointmentsChangingsService
             if(!in_array($changing,$update) && !in_array($changing,$delete)){
                 $delete[] = $changing;
             }
+            $insert[] = $changing;
+
         }
         return [
             'deleted' => $delete,
-            'updated' => $update
+            'updated' => $update,
+            '$insert' => $insert
         ];
     }
 
@@ -156,7 +190,8 @@ class DetectAppointmentsChangingsService
      */
     public function detectAppointmentsChangings(array $appointmentsOld,array $appointmentsNew,$timestamp){
         $changings = $this->getListChangings($appointmentsOld,$appointmentsNew);
-        $changesList = $this->detectDeleteOrUpdated($appointmentsNew,$changings);
+        $changesList = $this->detectDeleteOrUpdatedOrInserted($appointmentsNew,$changings);
+        $changesList['inserted'] = self::insertDateTimeChanges($changesList['inserted'],$timestamp);
         $changesList['updated'] = self::insertDateTimeChanges($changesList['updated'],$timestamp);
         $changesList['deleted'] = self::insertDateTimeChanges($changesList['deleted'],$timestamp);
         return $changesList;

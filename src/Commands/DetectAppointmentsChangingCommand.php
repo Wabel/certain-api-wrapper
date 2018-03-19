@@ -4,6 +4,7 @@ namespace Wabel\CertainAPI\Commands;
 
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Wabel\CertainAPI\Helpers\FileChangesHelper;
@@ -12,11 +13,6 @@ use Wabel\CertainAPI\Services\DetectAppointmentsChangingsService;
 
 class DetectAppointmentsChangingCommand extends Command
 {
-
-    /**
-     * @var bool
-     */
-    private $fileLockAuthorizeRun;
 
     /**
      * @var DetectAppointmentsChangingsService
@@ -34,27 +30,18 @@ class DetectAppointmentsChangingCommand extends Command
     private $dirPathHistoryAppointments;
 
     /**
-     * @var string
-     */
-    private $filePathEventToCheck;
-
-    /**
      * DetectAppointmentsChangingCommand constructor.
      * @param DetectAppointmentsChangingsService $detectAppointmentsChangingsService
-     * @param string $filePathEventToCheck
      * @param string $dirPathHistoryAppointments
-     * @param string $fileLockAuthorizeRun
      * @param CertainListener[] $listeners
      * @param null $name
      */
-    public function __construct(DetectAppointmentsChangingsService $detectAppointmentsChangingsService,$filePathEventToCheck,$dirPathHistoryAppointments,$fileLockAuthorizeRun, array $listeners=[],$name=null)
+    public function __construct(DetectAppointmentsChangingsService $detectAppointmentsChangingsService,$dirPathHistoryAppointments, array $listeners=[],$name=null)
     {
         parent::__construct($name);
         $this->detectAppointmentsChangingsService = $detectAppointmentsChangingsService;
         $this->listeners = $listeners;
         $this->dirPathHistoryAppointments = $dirPathHistoryAppointments;
-        $this->fileLockAuthorizeRun = $fileLockAuthorizeRun;
-        $this->filePathEventToCheck = $filePathEventToCheck;
     }
 
     protected function configure()
@@ -66,21 +53,14 @@ class DetectAppointmentsChangingCommand extends Command
 Request Certain to get appointments and detect changes between to request
 EOT
             );
+        $this->addArgument('eventCode',InputArgument::REQUIRED,'Specify the eventCode from Certain');
     }
 
-    public function run(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output)
     {
-        $eventCode = null;
-
-        //Get the EventCode we need to check.
-        if($this->filePathEventToCheck && file_exists($this->filePathEventToCheck)){
-            $configurationEventFile = parse_ini_file($this->filePathEventToCheck);
-            if(isset($configurationEventFile['eventCode'])){
-                $eventCode = $configurationEventFile['eventCode'];
-            }
-        }
+        $eventCode = $input->getArgument('eventCode');
         //That permits to stop the followings instructions when we are makings changes on Certain.
-        if(!file_exists($this->fileLockAuthorizeRun.'/detect_appointments_changes.lock') && $eventCode){
+        if($eventCode){
             $output->writeln('Detect changes - Run.');
             //Get the online appointments.
             $appointmentsNewCertain = $this->detectAppointmentsChangingsService->getCurrentAppoiments($eventCode);
