@@ -166,7 +166,7 @@ class DetectAppointmentsChangingsService
         return [
             'deleted' => $delete,
             'updated' => $update,
-            '$insert' => $insert
+            'insert' => $insert
         ];
     }
 
