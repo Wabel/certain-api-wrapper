@@ -95,7 +95,7 @@ class DetectAppointmentsChangingsServiceTest extends TestCase
         unset($currentAppoiments[1]);
         unset($currentAppoiments[4]);
         $changings = $detectService->getListChangings($oldAppointments,$currentAppoiments);
-        $this->assertEquals(3,count($changings));
+        $this->assertEquals(4,count($changings));
         $this->assertContains($delete1,$changings);
         $this->assertContains($delete2,$changings);
         $this->assertContains($delete3,$changings);
