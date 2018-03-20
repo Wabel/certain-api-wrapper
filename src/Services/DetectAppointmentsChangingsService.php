@@ -161,7 +161,7 @@ class DetectAppointmentsChangingsService
                     break;
                 }
             }
-            if(!in_array($changing,$update) && !in_array($changing,$delete)){
+            if(!in_array($changing,$insert) && !in_array($changing,$update) && !in_array($changing,$delete)){
                 $delete[] = $changing;
             }
 
