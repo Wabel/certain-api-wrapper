@@ -148,19 +148,21 @@ class DetectAppointmentsChangingsService
             $registration = $changing['registration']['regCode'];
             $registrationTarget = $changing['targetRegistration']['regCode'];
             foreach ($appointmentsNew as $currentAppointment){
+                if($changing == $currentAppointment){
+                    $insert[] = $changing;
+                    break;
+                }
                 $registrationCurrent = $currentAppointment['registration']['regCode'];
                 $registrationTargetCurrent = $currentAppointment['targetRegistration']['regCode'];
                 if(in_array($registration,[$registrationCurrent,$registrationTargetCurrent])
                     && in_array($registrationTarget,[$registrationCurrent,$registrationTargetCurrent])
-                    && !in_array($changing,$update) && !in_array($changing,$delete)) {
+                    && !in_array($changing,$insert) && !in_array($changing,$update) && !in_array($changing,$delete)) {
                     $update[] = $changing;
                     break;
                 }
             }
             if(!in_array($changing,$update) && !in_array($changing,$delete)){
                 $delete[] = $changing;
-            } else{
-                $insert[] = $changing;
             }
 
         }
