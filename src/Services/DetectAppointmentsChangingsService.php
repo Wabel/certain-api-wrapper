@@ -159,8 +159,9 @@ class DetectAppointmentsChangingsService
             }
             if(!in_array($changing,$update) && !in_array($changing,$delete)){
                 $delete[] = $changing;
+            } else{
+                $insert[] = $changing;
             }
-            $insert[] = $changing;
 
         }
         return [
