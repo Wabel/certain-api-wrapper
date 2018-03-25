@@ -127,8 +127,10 @@ class DetectAppointmentsChangingsService
             $changesListUpdateOrDelete = self::recursiveArrayObjectToFullArray($this->arrayRecursiveDiff($appointmentsOld,$appointmentsNew));
             $changesListInsert = self::recursiveArrayObjectToFullArray($this->arrayRecursiveDiffNew($appointmentsOld, $appointmentsNew, $changesListUpdateOrDelete));
         }
-        $changesList = array_merge($changesListUpdateOrDelete, $changesListInsert);
-        return $changesList;
+        return [
+            'inserted' => $changesListInsert,
+            'updated_deleted' => $changesListUpdateOrDelete
+        ];
     }
 
     /**
@@ -137,10 +139,9 @@ class DetectAppointmentsChangingsService
      * @param array $changingsDetected
      * @return array ['deleted'=>[],'updated'=>[]]
      */
-    public function detectDeleteOrUpdatedOrInserted(array $currentAppointments, array $changingsDetected){
+    public function detectDeleteOrUpdated(array $currentAppointments, array $changingsDetected){
         $delete = [];
         $update = [];
-        $insert = [];
         //@Todo: Detect Fields has changed
         $appointmentsNew = self::recursiveArrayObjectToFullArray($currentAppointments);
         $changings = self::recursiveArrayObjectToFullArray($changingsDetected);
@@ -148,20 +149,16 @@ class DetectAppointmentsChangingsService
             $registration = $changing['registration']['regCode'];
             $registrationTarget = $changing['targetRegistration']['regCode'];
             foreach ($appointmentsNew as $currentAppointment){
-                if($changing == $currentAppointment){
-                    $insert[] = $changing;
-                    break;
-                }
                 $registrationCurrent = $currentAppointment['registration']['regCode'];
                 $registrationTargetCurrent = $currentAppointment['targetRegistration']['regCode'];
                 if(in_array($registration,[$registrationCurrent,$registrationTargetCurrent])
                     && in_array($registrationTarget,[$registrationCurrent,$registrationTargetCurrent])
-                    && !in_array($changing,$insert) && !in_array($changing,$update) && !in_array($changing,$delete)) {
+                     && !in_array($changing,$update) && !in_array($changing,$delete)) {
                     $update[] = $changing;
                     break;
                 }
             }
-            if(!in_array($changing,$insert) && !in_array($changing,$update) && !in_array($changing,$delete)){
+            if(!in_array($changing, $update) && !in_array($changing,$delete)){
                 $delete[] = $changing;
             }
 
@@ -169,7 +166,6 @@ class DetectAppointmentsChangingsService
         return [
             'deleted' => $delete,
             'updated' => $update,
-            'inserted' => $insert
         ];
     }
 
@@ -193,8 +189,8 @@ class DetectAppointmentsChangingsService
      */
     public function detectAppointmentsChangings(array $appointmentsOld,array $appointmentsNew,$timestamp){
         $changings = $this->getListChangings($appointmentsOld,$appointmentsNew);
-        $changesList = $this->detectDeleteOrUpdatedOrInserted($appointmentsNew,$changings);
-        $changesList['inserted'] = self::insertDateTimeChanges($changesList['inserted'],$timestamp);
+        $changesList = $this->detectDeleteOrUpdated($appointmentsNew,$changings['updated_deleted']);
+        $changesList['inserted'] = self::insertDateTimeChanges($changings['inserted'],$timestamp);
         $changesList['updated'] = self::insertDateTimeChanges($changesList['updated'],$timestamp);
         $changesList['deleted'] = self::insertDateTimeChanges($changesList['deleted'],$timestamp);
         return $changesList;

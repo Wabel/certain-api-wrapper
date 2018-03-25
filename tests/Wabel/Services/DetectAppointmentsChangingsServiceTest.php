@@ -95,10 +95,10 @@ class DetectAppointmentsChangingsServiceTest extends TestCase
         unset($currentAppoiments[1]);
         unset($currentAppoiments[4]);
         $changings = $detectService->getListChangings($oldAppointments,$currentAppoiments);
-        $this->assertEquals(3,count($changings));
-        $this->assertContains($delete1,$changings);
-        $this->assertContains($delete2,$changings);
-        $this->assertContains($delete3,$changings);
+        $this->assertEquals(3,count($changings['updated_deleted']));
+        $this->assertContains($delete1,$changings['updated_deleted']);
+        $this->assertContains($delete2,$changings['updated_deleted']);
+        $this->assertContains($delete3,$changings['updated_deleted']);
     }
 
     public function testDetectDeleteOrUpdated(){
@@ -114,8 +114,8 @@ class DetectAppointmentsChangingsServiceTest extends TestCase
         $currentAppoiments[10]["startDate"] = "2015-17-07 12:00:00";
         $currentAppoiments[10]["endDate"] = "2015-17-07 12:30:00";
         $changings = $detectService->getListChangings($oldAppointments,$currentAppoiments);
-        $listDetected = $detectService->detectDeleteOrUpdatedOrInserted($currentAppoiments,$changings);
-        $this->assertEquals(4,count($changings));
+        $listDetected = $detectService->detectDeleteOrUpdated($currentAppoiments,$changings['updated_deleted']);
+        $this->assertEquals(3,count($changings['updated_deleted']));
         $this->assertArrayHasKey('deleted',$listDetected);
         $this->assertArrayHasKey('updated',$listDetected);
         $this->assertEquals(2,count($listDetected['deleted']));
