@@ -26,12 +26,25 @@ class DetectAppointmentsChangingsService
      * @var Lock
      */
     private $lock;
+    /**
+     * @var string
+     */
+    private $dirPathHistoryAppointments;
+    /**
+     * @var CertainListener[]
+     */
+    private $listeners;
 
-    public function __construct(AppointmentsCertain $appointmentsCertain, MultiLogger $logger, Lock $lock)
+    /**
+     * @param CertainListener[] $listeners
+     */
+    public function __construct(AppointmentsCertain $appointmentsCertain, MultiLogger $logger, Lock $lock, string $dirPathHistoryAppointments, array $listeners = [])
     {
         $this->appointmentsCertain = $appointmentsCertain;
         $this->logger = $logger;
         $this->lock = $lock;
+        $this->dirPathHistoryAppointments = $dirPathHistoryAppointments;
+        $this->listeners = $listeners;
     }
 
     /**
@@ -223,25 +236,22 @@ class DetectAppointmentsChangingsService
         return $changesList;
     }
 
-    /**
-     * @param string $eventCode
-     * @param string $pathDirectory
-     * @param CertainListener $listeners
-     */
-    public function runCommandForEvent(string $eventCode, string $pathDirectory, array $listeners, OutputInterface $output): void
+    public function runCommandForEvent(string $eventCode, OutputInterface $output = null): void
     {
-        $this->logger->addLogger(new DateTimeFormatter(new ConsoleLogger($output)));
-        $codeCheckDirectory = FileChangesHelper::checkDirectory($pathDirectory);
+        if ($output) {
+            $this->logger->addLogger(new DateTimeFormatter(new ConsoleLogger($output)));
+        }
+        $codeCheckDirectory = FileChangesHelper::checkDirectory($this->dirPathHistoryAppointments);
         if ($codeCheckDirectory === 'no_directory') {
-            $this->logger->error('Path ' . $pathDirectory . ' doesn\'t exists.');
+            $this->logger->error('Path ' . $this->dirPathHistoryAppointments . ' doesn\'t exists.');
             return;
         }
         if ($codeCheckDirectory === 'not_readable') {
-            $this->logger->error('Path ' . $pathDirectory . ' is not readable.');
+            $this->logger->error('Path ' . $this->dirPathHistoryAppointments . ' is not readable.');
             return;
         }
         if ($codeCheckDirectory === 'not_writable') {
-            $this->logger->error('Path ' . $pathDirectory . ' is not writable.');
+            $this->logger->error('Path ' . $this->dirPathHistoryAppointments . ' is not writable.');
             return;
         }
         $this->lock->acquireLock();
@@ -251,7 +261,7 @@ class DetectAppointmentsChangingsService
         $appointmentsNewCertain = $this->getCurrentAppoiments($eventCode);
         $appointmentsNew = self::recursiveArrayObjectToFullArray($appointmentsNewCertain);
         //Get the last saved appointments to get old data.
-        $appointmentsOldHistoryFilePath = FileChangesHelper::getTheLastAppointmentsSaved($eventCode, $pathDirectory);
+        $appointmentsOldHistoryFilePath = FileChangesHelper::getTheLastAppointmentsSaved($eventCode, $this->dirPathHistoryAppointments);
         if (!$appointmentsOldHistoryFilePath) {
             //No files so it's the first time we attempt to synchronize.
             $appointmentsOld = [];
@@ -266,12 +276,12 @@ class DetectAppointmentsChangingsService
         if (!$appointmentsOld || ((isset($listChangings['updated']) && !empty($listChangings['updated']))
                 || (isset($listChangings['deleted']) && !empty($listChangings['deleted'])))) {
             //Changes? So we save the new online appointments
-            FileChangesHelper::saveAppointmentsFileByHistory($pathDirectory . '/appointments_' . $eventCode . '.json', json_encode($appointmentsNew));
+            FileChangesHelper::saveAppointmentsFileByHistory($this->dirPathHistoryAppointments . '/appointments_' . $eventCode . '.json', json_encode($appointmentsNew));
             $this->logger->info('Detect changes - Save Changes');
         } else {
             $this->logger->info('Detect changes - No Changes');
         }
-        foreach ($listeners as $listener) {
+        foreach ($this->listeners as $listener) {
             //Run Listener. For instance,Here we can use ChangingsToFileListeners to save the changes in file.
             $listener->run($eventCode, $listChangings);
         }

@@ -7,7 +7,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Wabel\CertainAPI\Interfaces\CertainListener;
 use Wabel\CertainAPI\Services\DetectAppointmentsChangingsService;
 
 class DetectAppointmentsChangingCommand extends Command
@@ -19,28 +18,14 @@ class DetectAppointmentsChangingCommand extends Command
     private $detectAppointmentsChangingsService;
 
     /**
-     * @var CertainListener[]
-     */
-    private $listeners;
-
-    /**
-     * @var string
-     */
-    private $dirPathHistoryAppointments;
-
-    /**
      * DetectAppointmentsChangingCommand constructor.
      * @param DetectAppointmentsChangingsService $detectAppointmentsChangingsService
-     * @param string $dirPathHistoryAppointments
-     * @param CertainListener[] $listeners
-     * @param null $name
+     * @param string|null $name
      */
-    public function __construct(DetectAppointmentsChangingsService $detectAppointmentsChangingsService, $dirPathHistoryAppointments, array $listeners = [], $name = null)
+    public function __construct(DetectAppointmentsChangingsService $detectAppointmentsChangingsService, string $name = null)
     {
         parent::__construct($name);
         $this->detectAppointmentsChangingsService = $detectAppointmentsChangingsService;
-        $this->listeners = $listeners;
-        $this->dirPathHistoryAppointments = $dirPathHistoryAppointments;
     }
 
     protected function configure()
@@ -57,7 +42,7 @@ EOT
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->detectAppointmentsChangingsService->runCommandForEvent($input->getArgument('eventCode'), $this->dirPathHistoryAppointments, $this->listeners, $output);
+        $this->detectAppointmentsChangingsService->runCommandForEvent($input->getArgument('eventCode'), $output);
     }
 
 }
