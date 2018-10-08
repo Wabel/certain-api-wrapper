@@ -30,6 +30,13 @@ class FileChangesHelper
     }
 
     /**
+     * Remove the file
+     */
+    public static function removeFile(string $path): void{
+        unlink($path);
+    }
+
+    /**
      * Save appointments with the timestamp in filename.
      * @param string $filePath
      * @param string $contents
@@ -103,5 +110,38 @@ class FileChangesHelper
     public static function getTheLastAppointmentsSaved($eventCode,$pathDir){
         $fileList = self::getFilesListHistoryAppointmentsByEventCode($eventCode,$pathDir);
         return array_shift($fileList);
+    }
+
+    public static function checkDirectory(string $pathDir): string
+    {
+        if (!is_dir($pathDir)) {
+            return 'no_directory';
+        }
+        if (!is_readable($pathDir)) {
+            return 'not_readable';
+        }
+        if (!is_writable($pathDir)) {
+            return 'not_writable';
+        }
+        return 'ok';
+    }
+
+    public static function commandIsLocked(string $pathDir): bool
+    {
+        return file_exists($pathDir. '/command.lock');
+    }
+
+    public static function lockCommand(string $pathDir): void
+    {
+        if (!self::commandIsLocked($pathDir)) {
+            self::writeFile($pathDir. '/command.lock','1');
+        }
+    }
+
+    public static function unlockCommand(string $pathDir): void
+    {
+        if (self::commandIsLocked($pathDir)) {
+            self::removeFile($pathDir. '/command.lock');
+        }
     }
 }
