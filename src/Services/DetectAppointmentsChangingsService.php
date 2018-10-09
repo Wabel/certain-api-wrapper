@@ -192,7 +192,7 @@ class DetectAppointmentsChangingsService
                 if (in_array($registration, [$registrationCurrent, $registrationTargetCurrent])
                     && in_array($registrationTarget, [$registrationCurrent, $registrationTargetCurrent])
                     && !in_array($changing, $update) && !in_array($changing, $delete)) {
-                    $update[] = $changing;
+                    $update[] = $currentAppointment;
                     break;
                 }
             }
