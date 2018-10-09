@@ -186,6 +186,7 @@ class DetectAppointmentsChangingsService
         foreach ($changings as $changing) {
             $registration = $changing['registration']['regCode'];
             $registrationTarget = $changing['targetRegistration']['regCode'];
+            $runInNew = 0;
             foreach ($appointmentsNew as $currentAppointment) {
                 $registrationCurrent = $currentAppointment['registration']['regCode'];
                 $registrationTargetCurrent = $currentAppointment['targetRegistration']['regCode'];
@@ -195,8 +196,9 @@ class DetectAppointmentsChangingsService
                     $update[] = $currentAppointment;
                     break;
                 }
+                $runInNew++;
             }
-            if (!in_array($currentAppointment, $update) && !in_array($changing, $delete)) {
+            if ($runInNew === count($appointmentsNew) && !in_array($changing, $delete)) {
                 $delete[] = $changing;
             }
 
