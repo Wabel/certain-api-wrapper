@@ -29,7 +29,7 @@ class ChangingsToFileListeners implements CertainListener
      * @param array $elements
      * @return void
      */
-    public function run($eventCode,array $elements, array $options = [])
+    public function run(string $eventCode,array $elements, array $options = [])
     {
         if(isset($elements['updated'])){
             foreach ($elements['updated'] as $element){
