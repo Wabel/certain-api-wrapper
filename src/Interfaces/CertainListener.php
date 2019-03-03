@@ -10,6 +10,6 @@ interface CertainListener
      * @param array $elements
      * @return void
      */
-    public function run($eventCode, array $elements);
+    public function run($eventCode, array $elements, array $options = []);
 
 }
