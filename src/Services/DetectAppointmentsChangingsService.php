@@ -134,15 +134,16 @@ class DetectAppointmentsChangingsService
     /**
      * @param array $arrayOlds
      * @param array $arrayNews
-     * @param array $existedUpdateOrDelete
      * @return array
      */
-    private function arrayRecursiveDiffNew(array $arrayOlds, array $arrayNews, array $existedUpdateOrDelete)
+    private function arrayRecursiveDiffNew(array $arrayOlds, array $arrayNews)
     {
         $difference = [];
+        $appointmentIdOlds = array_map(function($appointment) {
+            return $appointment['appointmentId'];
+        }, $arrayOlds);
         foreach ($arrayNews as $key => $arrayNew) {
-            if (!in_array($arrayNew, $arrayOlds)
-                && !in_array(self::recursiveArrayObjectToFullArray($arrayNew), $existedUpdateOrDelete)) {
+            if (!in_array($arrayNew['appointmentId'], $appointmentIdOlds)) {
                 $difference[$key] = $arrayNew;
             }
         }
@@ -162,7 +163,7 @@ class DetectAppointmentsChangingsService
         $changesListInsert = [];
         if ($this->hasChanged($appointmentsOld, $appointmentsNew)) {
             $changesListUpdateOrDelete = self::recursiveArrayObjectToFullArray($this->arrayRecursiveDiff($appointmentsOld, $appointmentsNew));
-            $changesListInsert = self::recursiveArrayObjectToFullArray($this->arrayRecursiveDiffNew($appointmentsOld, $appointmentsNew, $changesListUpdateOrDelete));
+            $changesListInsert = self::recursiveArrayObjectToFullArray($this->arrayRecursiveDiffNew($appointmentsOld, $appointmentsNew));
         }
         return [
             'inserted' => $changesListInsert,
