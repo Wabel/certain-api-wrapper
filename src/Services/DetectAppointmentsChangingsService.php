@@ -277,7 +277,7 @@ class DetectAppointmentsChangingsService
         $timestamp = time();
         $listChangings = $this->detectAppointmentsChangings($appointmentsOld, $appointmentsNew, $timestamp);
         if (!$appointmentsOld || ((isset($listChangings['updated']) && !empty($listChangings['updated']))
-                || (isset($listChangings['deleted']) && !empty($listChangings['deleted'])))) {
+                || (isset($listChangings['deleted']) && !empty($listChangings['deleted']))  || (isset($listChangings['inserted']) && !empty($listChangings['inserted'])))) {
             //Changes? So we save the new online appointments
             FileChangesHelper::saveAppointmentsFileByHistory($this->dirPathHistoryAppointments . '/appointments_' . $eventCode . '.json', json_encode($appointmentsNew));
             $this->logger->info('Detect changes - Save Changes');
