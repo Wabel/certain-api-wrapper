@@ -275,7 +275,8 @@ class DetectAppointmentsChangingsService
         }
         //Check if they are changes.
         $timestamp = time();
-        $listChangings = $this->detectAppointmentsChangings($appointmentsOld, $appointmentsNew, $timestamp);
+//        $listChangings = $this->detectAppointmentsChangings($appointmentsOld, $appointmentsNew, $timestamp);
+        $listChangings = $this->detectAppointmentsChanges($appointmentsOld, $appointmentsNew, $timestamp);
         if (!$appointmentsOld || ((isset($listChangings['updated']) && !empty($listChangings['updated']))
                 || (isset($listChangings['deleted']) && !empty($listChangings['deleted']))  || (isset($listChangings['inserted']) && !empty($listChangings['inserted'])))) {
             //Changes? So we save the new online appointments
@@ -284,12 +285,58 @@ class DetectAppointmentsChangingsService
         } else {
             $this->logger->info('Detect changes - No Changes');
         }
+        FileChangesHelper::saveAppointmentsFileByHistory($this->dirPathHistoryAppointments . '/changes_' . $eventCode . '.json', json_encode($listChangings));
         foreach ($this->listeners as $listener) {
             //Run Listener. For instance,Here we can use ChangingsToFileListeners to save the changes in file.
             $listener->run($eventCode, $listChangings);
         }
         $this->logger->info('Detect changes - Stop.');
         $this->lock->releaseLock();
+    }
+
+    private function detectAppointmentsChanges(array $appointmentsOld, array $appointmentsNew, int $timestamp)
+    {
+        $oldAppointments = [];
+        $newAppointments = [];
+        $oldAppointmentIds = [];
+        $newAppointmentIds = [];
+
+        foreach ($appointmentsOld as $item) {
+            $oldAppointments[$item['appointmentId']] = $item;
+            $oldAppointmentIds[] = $item['appointmentId'];
+        }
+        foreach ($appointmentsNew as $item) {
+            $newAppointments[$item['appointmentId']] = $item;
+            $newAppointmentIds[] = $item['appointmentId'];
+        }
+
+        $data = [
+            'inserted' => [],
+            'updated' => [],
+            'deleted' => [],
+        ];
+
+        $data['inserted'] = array_map(static function($item) use ($newAppointments) {
+            return $newAppointments[$item];
+        }, array_diff($newAppointmentIds, $oldAppointmentIds));
+
+        $data['deleted'] = array_map(static function($item) use ($oldAppointments) {
+            return $oldAppointments[$item];
+        }, array_diff($oldAppointmentIds, $newAppointmentIds));
+
+        $updatedIds = array_keys(array_intersect_key($newAppointments, $oldAppointments));
+        foreach ($updatedIds as $updatedId) {
+            // Important we use simple != and not strict !== to avoid issue if positions in array are different
+            if ($newAppointments[$updatedId] != $oldAppointments[$updatedId]) {
+                $data['updated'][] = $newAppointments[$updatedId];
+            }
+        }
+
+        $data['inserted'] = self::insertDateTimeChanges($data['inserted'], $timestamp);
+        $data['updated'] = self::insertDateTimeChanges($data['updated'], $timestamp);
+        $data['deleted'] = self::insertDateTimeChanges($data['deleted'], $timestamp);
+
+        return $data;
     }
 
 }
